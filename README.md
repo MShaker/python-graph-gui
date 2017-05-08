@@ -26,9 +26,7 @@ dealing with graphs.
   
   graph_path_algorithms--
     contains various functions for running algorithms on input graphs and returning results of algorithm.
-    Currently supports implementations of:
-      1. Dijkstra's shortest path
-      2. Prim's minimum spanning tree
+    Currently supports implementations of Dijkstra's shortest path, and Prim's minimum spanning tree.
       
 The GUI files utilize an underlying Graph object.  The underlaying graph can then be used with functions from the graph_path_algorithms 
 to return results which are then taken and displayed graphically by the GUI objects.  
