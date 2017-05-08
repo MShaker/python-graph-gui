@@ -1,6 +1,7 @@
 # python-graph-gui
 
 Author: Sharif Shaker
+
 Date of Creation: 5/8/2017
 
 DISCRIPTION: Graph GUI project for creating graphs and running graph algorithms.
