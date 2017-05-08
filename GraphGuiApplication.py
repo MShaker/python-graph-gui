@@ -345,7 +345,6 @@ class MainGraphWindow(QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
-    import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = MainGraphWindow()
     ui = Ui_MainWindow()
