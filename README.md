@@ -13,8 +13,7 @@ run on the graph and the results of the algorithms are displayed graphically.
 To use the full application run the GraphGuiApplication.py file.  
 
 FILES:
-The python files contained in the PythonGraphGui folder contain classes and functions for creating the graphical representation of graph and
-supporting user interaction with the graph.  
+The python files contained in the PythonGraphGui folder contain classes and functions for creating the graphical representation of graph and supporting user interaction with the graph.  
 
 The internal PyGraph folder contains an underlying SGraph file and graph_path_algotithm file witch contain much of the basic logic for 
 dealing with graphs.
@@ -26,7 +25,7 @@ dealing with graphs.
   
   graph_path_algorithms--
     contains various functions for running algorithms on input graphs and returning results of algorithm.
-    Currently supports implementations of Dijkstra's shortest path, and Prim's minimum spanning tree.
+    Currently supports implementations of Dijkstra's, bellman ford's shortest path, and Prim's minimum spanning tree.
       
 The GUI files utilize an underlying Graph object.  The underlaying graph can then be used with functions from the graph_path_algorithms 
 to return results which are then taken and displayed graphically by the GUI objects.  
