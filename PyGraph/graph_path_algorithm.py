@@ -11,8 +11,11 @@ import random
     Modified: 5/5/2017 
     Changes made: added prims algorithm to find minimum spanning tree of an input graph
 
+    Modified: 5/10/2017 
+    Changes made: added bellman fords algorithm to find shortest path under additional circumstances
+
     Description:
-        This file contains graph traversal and shortest path finding, and minimum spanning tree algorithms
+        This file contains graph shortest path finding, and minimum spanning tree algorithms
 
 '''
 
@@ -88,5 +91,53 @@ def prims(graph):
 
   return edges_list # return list of edges
 
+
+
+
+def bellman_ford(graph, from_v, to_v_list=None):
+  node_dict = {}  # create a node dictionary to return a distance, parent pair given a node value 
+
+  if to_v_list is None: to_v_list = node_dict.keys() # if no node was input, find path to all nodes
+
+  # make sure start node is valid	
+  if from_v not in graph.nodes_dict:
+    print ('Invalid start node of ' + str(from_v))
+    return
+	  
+  # make sure destination nodes are valid
+  for node in to_v_list:
+    if node not in graph.nodes_dict:
+      print ('Invalid end node of ' + str(node))
+      return	
+    
+  # set up algorithm start conditions
+  for node in graph.nodes_dict.keys(): # for each node
+    if node == from_v: # if node is the start node
+      node_dict[node] = (0, node) # put into dictionary with 0 distance and itself as a parent
+    else:
+      node_dict[node] = (float('inf'), None) # put all other nodes in dictionary with largest possible distance and no parent
+
+  for i in range(len(graph.nodes_dict.keys())-1): # loop through once for each the number of vertices - 1
+    for (u, v), weight in graph.edges_dict.items(): # for each loop get each edge 
+      if node_dict[u][0] + weight < node_dict[v][0]: # if shorter path found using that edge
+        node_dict[v] = (node_dict[u][0] + weight, u) # reset node's distance and parent
+  result = [] 
+  for (u, v), weight in graph.edges_dict.items(): # try to relax edges one more time
+    if node_dict[u][0] + weight < node_dict[v][0]: # if distance to a node can be shortened again a negative cycle exists 
+      result.append((node, -1, None)) # return result with none path and 
+      return result
+  
+  for node in to_v_list: # go through all end nodes 
+    path = [node] 
+    total_dist = node_dict[node][0] # set total distance to dist from start to goal node
+    if total_dist == float('inf'): # if path wasn't found
+      result.append((node, total_dist, None)) # return result with None  
+    else:  
+      while path[0] != from_v: # while node at 0 index is not start node
+        path.insert(0, node_dict[path[0]][1]) # insert parent into 0 index of path
+      result.append((node, total_dist, path)) # add path to result list
+		  
+  return result	  
       
+          
           
