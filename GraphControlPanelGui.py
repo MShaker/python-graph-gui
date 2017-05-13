@@ -6,8 +6,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
     Author: Sharif Shaker
     Date: 4/29/2017
     
-    Modified: 
-    Changes made: 
+    Modified: 5/11/2017
+    Changes made: allowed control panel to run bellman ford algorithm 
 
     Description:
         This file contains various classes and functions for displaying a graphical panel for controling various functions to 
@@ -154,7 +154,6 @@ class Ui_GraphControlWindow(object):
         self.init_buttons()
         
     
-
     def init_buttons(self):
         # connect buttons and text edit values to various GraphScene functions
         self.add_edge_btn.clicked.connect(lambda: self.scene.add_edge(self.add_edge1_edit.text(), 
@@ -177,9 +176,13 @@ class Ui_GraphControlWindow(object):
             # run dijkstra on GraphScene with values from text edit boxes
             self.scene.show_shortest_path_dijkstra(self.path_node1_edit.text(), self.path_node2_edit.text())
         elif algo == 'PRIMS': # if using prims
-            self.scene.show_mst_prims() # run prims on GraphScene 
-           
-      
+            self.scene.show_mst_prims() # run prims on GraphScene
+        elif algo == 'BELLMAN FORD': # if using bellman ford
+            # run bellman ford on GraphScene 
+            self.scene.show_shortest_path_bellman_ford(self.path_node1_edit.text(), self.path_node2_edit.text()) 
+        
+          
+       
 
     def retranslateUi(self, GraphControlWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -203,5 +206,6 @@ class Ui_GraphControlWindow(object):
         self.path_node2_lab.setText(_translate("GraphControlWindow", "Node 2:"))
         self.find_path_btn.setText(_translate("GraphControlWindow", "SHOW PATH"))
         self.clear_path_btn.setText(_translate("GraphControlWindow", "CLEAR PATH"))
+
 
 
