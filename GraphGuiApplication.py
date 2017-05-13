@@ -9,8 +9,8 @@ from GraphControlPanelGui import Ui_GraphControlWindow as GraphControlPanel
     Author: Sharif Shaker
     Date: 4/29/2017
     
-    Modified: 
-    Changes made: 
+    Modified: 5/11/2017
+    Changes made: Added functionality to change graph type between undirected graph and digraph by pressing a button on the panel.
 
     Description:
         This file contains various classes and functions for displaying a graphical representation of a graph.  The Graphical layout and 
@@ -20,19 +20,20 @@ from GraphControlPanelGui import Ui_GraphControlWindow as GraphControlPanel
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
+
+        self.MainWindow = MainWindow
+        self.MainWindow.setObjectName("MainWindow")
 
         # setup central widget and main graphics area 
-        MainWindow.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.MainWindow.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
+        self.centralwidget = QtWidgets.QWidget(self.MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.graphView = QtWidgets.QGraphicsView(self.centralwidget)
         self.graphView.setObjectName("graphView")
 
         # using the MainWindow passed into the funtion, add a graph scene 
-        self.scene=MainWindow.graph_scene
+        self.scene=self.MainWindow.graph_scene
         self.graphView.setScene(self.scene)
-        self.graphView.setViewport(QtOpenGL.QGLWidget())
 
         # setup layout
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -71,7 +72,7 @@ class Ui_MainWindow(object):
         # setup combo box for selecting algorithms to run on graph
         self.select_path_alg_comboBox = SceneConnectedComboBox(self.centralwidget, self.scene) # box requires reference to scene 
         self.select_path_alg_comboBox.setEditable(False)
-        self.select_path_alg_comboBox.addItems(['DIJKSTRA', 'PRIMS']) # algorithms that can be run
+        self.select_path_alg_comboBox.addItems(['DIJKSTRA','BELLMAN FORD', 'PRIMS']) # algorithms that can be run
         self.select_path_alg_comboBox.setMaxVisibleItems(8)
         self.select_path_alg_comboBox.setObjectName("select_path_alg_comboBox")
         self.select_path_alg_comboBox.setCurrentIndex(0)
@@ -215,42 +216,77 @@ class Ui_MainWindow(object):
         self.control_panel_btn.setObjectName("control_panel_btn")
         self.verticalLayout.addWidget(self.control_panel_btn)
 
+        # add button for pulling up control panel
+        self.switch_graph_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.switch_graph_btn.setObjectName("switch_graph_btn")
+        self.verticalLayout.addWidget(self.switch_graph_btn)
+
         # add vertical layout to main horizontal layout
         self.horizontalLayout.addLayout(self.verticalLayout)
 
         # set as central widget
-        MainWindow.setCentralWidget(self.centralwidget)
+        self.MainWindow.setCentralWidget(self.centralwidget)
 
         # help menu setup
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar = QtWidgets.QMenuBar(self.MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1225, 31))
         self.menubar.setObjectName("menubar")
-        helpAction = QtWidgets.QAction('&Open Help', MainWindow) # action pulling up a help menu      
+        helpAction = QtWidgets.QAction('&Open Help', self.MainWindow) # action pulling up a help menu      
         helpAction.setShortcut('Ctrl+H')
         helpAction.setStatusTip('application help')
         helpAction.triggered.connect(lambda: webbrowser.open("GraphGuiHelp.pdf")) # open help file
         self.menuHelp = QtWidgets.QMenu(self.menubar)
         self.menuHelp.setObjectName("menuHelp")
         self.menuHelp.addAction(helpAction)
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(self.MainWindow)
         self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+        self.MainWindow.setStatusBar(self.statusbar)
         self.menubar.addAction(self.menuHelp.menuAction())
-        self.retranslateUi(MainWindow) # call retranslateUi function
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.retranslateUi(self.MainWindow) # call retranslateUi function
+        QtCore.QMetaObject.connectSlotsByName(self.MainWindow)
+  
+        self.button_setup()
+        
+
+    def button_setup(self):
 
         # connect edit_path_algorithm to combobox
         self.select_path_alg_comboBox.activated.connect(self.edit_path_algorithm)
 
         # connect the MainWindows init_control_panel function to button
-        self.control_panel_btn.clicked.connect(lambda: MainWindow.init_control_pane())
+        self.control_panel_btn.clicked.connect(lambda: self.MainWindow.init_control_pane())
+
+        # connect the MainWindows init_control_panel function to button
+        self.switch_graph_btn.clicked.connect(lambda: self.change_graph_type())
 
         # connect update_data function to signal 
         self.scene.data_updater.signal.connect(self.update_data)
 
+    def change_graph_type(self):
+        _translate = QtCore.QCoreApplication.translate
+        (nodes, edges) = self.MainWindow.switch_graph_type() # switch graph type and get previously used nodes and edges from old graph
+        self.setupUi(self.MainWindow) # reset the UI with the modified MainWindow 
+        if self.scene.digraph: # if changed to digraph
+            self.switch_graph_btn.setText(_translate("MainWindow", "TO GRAPH")) # button to change to graph
+        else: 
+            self.switch_graph_btn.setText(_translate("MainWindow", "TO DIGRAPH")) # button to change to digraph
+        
+        for node_val, node in nodes.items(): # for each node that was in the original graph
+            node.selected = False 
+            node.highlighted = False # remove higlights or selctions
+            self.scene.addItem(node) # add the node to the windows graph scene
+            self.scene.nodes[node_val] = node  # add the node to the scene's dictionary
+            self.scene.graph.add_node(node_val) # add the node to the scene's underlying graph
 
+        for (from_node, to_node), edge in edges.items(): # for each edge in the original graph
+            self.scene.add_edge(from_node, to_node, edge.weight) # add it to the new graph
+            if self.scene.digraph: # if changed from graph to digraph
+                self.scene.add_edge(to_node, from_node, edge.weight) # add edges in both directions
+        
+ 
     def edit_path_algorithm(self):
+
         # when algorithm combo box is edited reset the graph scenes current algorithm
         self.scene.current_path_algo = self.select_path_alg_comboBox.currentText()
         
@@ -279,6 +315,9 @@ class Ui_MainWindow(object):
         self.graph_status_lab.setText(_translate("MainWindow", "Connected:"))
         self.graph_status.setText(_translate("MainWindow", "NO"))
         self.control_panel_btn.setText(_translate("MainWindow", "CONTROL PANEL"))
+        self.switch_graph_btn.setText(_translate("MainWindow", "TO GRAPH"))
+        
+            
         self.menuHelp.setTitle(_translate("MainWindow", "Help"))
 
     @QtCore.pyqtSlot()
@@ -321,8 +360,9 @@ class MainGraphWindow(QtWidgets.QMainWindow):
     def __init__(self):
         # initialize the main window of the GUI
         super().__init__()
-        self.graph_scene = GraphScene() # initialize it with a graph scene
 
+        self.graph_scene = GraphScene(True) # initialize it with a graph scene
+        
         self.app = QtWidgets.QApplication([])
         self.screen_resolution = app.desktop().screenGeometry()
         self.width = self.screen_resolution.width()
@@ -338,17 +378,29 @@ class MainGraphWindow(QtWidgets.QMainWindow):
         ui.setupUi(self.GraphControlWindow, self.graph_scene)
         self.GraphControlWindow.setGeometry(0,40,self.width/4,self.height-100) # control panel takes 1/4 of the total width of the screen
         self.GraphControlWindow.show() # display control panel
-        
 
+    def switch_graph_type(self):
+        
+        edges = self.graph_scene.edges
+        nodes = self.graph_scene.nodes
+        digraph = not self.graph_scene.digraph
+        
+        self.graph_scene = GraphScene(digraph)
+
+        self.init_control_pane() # also intitialize with a control panel
+        
+        return ((nodes, edges)) 
+        
+                
     def closeEvent(self, event):
         self.GraphControlWindow.close() # when the main window is closed the control panel must also close
 
 
 if __name__ == "__main__":
+    import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = MainGraphWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-
