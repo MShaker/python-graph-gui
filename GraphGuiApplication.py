@@ -261,7 +261,7 @@ class Ui_MainWindow(object):
         self.switch_graph_btn.clicked.connect(lambda: self.change_graph_type())
 
         # connect update_data function to signal 
-        self.scene.data_updater.signal.connect(self.update_data)
+        self.scene.data_updater.signal.connect(lambda: self.update_data())
 
     def change_graph_type(self):
         _translate = QtCore.QCoreApplication.translate
